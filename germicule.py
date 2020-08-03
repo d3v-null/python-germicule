@@ -4,6 +4,7 @@ import math
 from argparse import ArgumentParser, FileType
 from pprint import pprint
 from os.path import splitext
+from itertools import combinations
 
 from graphviz import Digraph
 
@@ -91,7 +92,7 @@ def label_escape(node):
 def build_graph(node, args):
     global UNKNOWN_COUNT
     clusters = {}
-    edges = []
+    edges = {}
 
     if (not node) or ('name' not in node and 'unknown' not in node):
         return clusters, edges
@@ -124,7 +125,8 @@ def build_graph(node, args):
             member_clusters, member_edges = build_graph(member, args)
             for cluster, nodes in member_clusters.items():
                 clusters[cluster] = clusters.get(cluster, []) + nodes
-            edges.extend(member_edges)
+
+            edges.update(member_edges)
 
             edge_attrs = {
                 'tail_name': node_name,
@@ -137,7 +139,7 @@ def build_graph(node, args):
                         edge_attrs['K'] = str((member['contact'] + 1))
                 if 'description' in member and member['description'] is not None:
                     edge_attrs['edgetooltip'] = member['description']
-            edges.append(edge_attrs)
+            edges[(node_name, member_name)] = edge_attrs
         except KeyError as exc:
             raise UserWarning(
                 f"could not parse node {member}. {exc.__class__.__name__} {exc}")
@@ -162,7 +164,6 @@ def main(argv=None):
         'fontcolor': COLORS['fg'],
         # 'fontsize': '8',
         'fontname': 'Fira Code',
-        # 'arrowhead': 'none'
     }
     node_attrs = {
         'fontname': 'Fira Code',
@@ -211,8 +212,24 @@ def main(argv=None):
         with dot.subgraph(**cluster_attrs) as subdot:
             for node_attrs in nodes:
                 subdot.node(**node_attrs)
+        # Implicit connections between clusters
+        for left, right in combinations(nodes, 2):
+            left_name = left.get('name')
+            if not left_name:
+                continue
+            right_name = right.get('name')
+            if not right_name:
+                continue
+            if (left_name, right_name) not in edges \
+                    and (right_name, left_name) not in edges:
+                edges[(left_name, right_name)] = {
+                    'tail_name': left_name,
+                    'head_name': right_name,
+                    'style': 'dashed',
+                    'arrowhead': 'none',
+                }
 
-    for edge in edges:
+    for _, edge in edges.items():
         dot.edge(**edge)
 
     # print(dot.source, file=args.source_file)
