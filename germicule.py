@@ -107,7 +107,7 @@ def build_graph(node, args):
     # if risk is None:
     #     risk = randrange(0, 5)
     if risk is not None:
-        node_attrs['fillcolor'] = COLORS['risk'][math.floor(risk)]
+        node_attrs['fillcolor'] = COLORS['risk'][math.ceil(risk)]
 
     cluster = node.get('cluster')
     clusters[cluster] = clusters.get(cluster, []) + [node_attrs]
