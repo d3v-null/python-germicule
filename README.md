@@ -4,7 +4,51 @@ Visualize your contacts and their COVID risk factors
 
 Line thickness represents ammount of contact
 
-Node size represents covid risk factor
+Node size represents covid risk factor.
+
+Example data:
+
+```json
+{
+    "version": 0.1,
+    "name": "👨‍🎤",
+    "risk": 2 ,
+    "germicule": [
+        {
+            "name": "🐺",
+            "risk": 2,
+            "contact": 1,
+            "description": "Housemate",
+            "cluster": "Lygon",
+            "germicule": [
+                {
+                    "name": "🐭",
+                    "risk": 1,
+                    "contact": null,
+                    "description": null,
+                    "germicule": [
+                        null
+                    ]
+                },
+                {
+                    "name": "🐶",
+                    "risk": 1,
+                    "contact": null,
+                    "description": null,
+                    "germicule": [
+                        null
+                    ]
+                }
+            ]
+        },
+    ...
+    ]
+}
+```
+
+produces:
+
+![example graph](germicule.gv.svg)
 
 ## Requirements
 
